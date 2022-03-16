@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <style>
+        .border-box{
+            width: 1080px;
+            margin: auto;
+            border: 1px solid #333;
+            text-align: center;
+        }
+        .heading{
+            border-bottom: 1px solid #333;
+            text-align: center;
+            background-color: #dfdfdf;
+            margin-top:0;
+            margin-bottom: 20px;
+            padding: 10px;
+
+        }
+        .city-box{
+            width: 20%;
+            border: 1px solid #333;
+            border-radius: 5px;
+            float: left;
+            margin: 0px 1.7%;
+            padding: 5px;
+            background: #f5f5f5;
+            position: relative;
+        }
+        .city::after{
+            content: "";
+            clear: both;
+            display: table;
+        }
+        .city-box.active{
+            background: #28f5cf;
+            font-weight: 600;
+        }
+        h3{
+            margin-top: 50px;
+            margin-bottom: 30px;
+        }
+        .f-details{
+            width: 20%;
+            border: 1px solid #333;
+            border-radius: 5px;
+            float: left;
+            margin: 0px 1.7%;
+            padding: 5px;
+        }
+        .f-details .bold{
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .forecast::after{
+            content: "";
+            clear: both;
+            display: table;
+        }
+        .forecast{
+            margin-bottom: 30px;
+        }
+
+        .drop-down{
+            position: absolute;
+            background: #f5f5f5;
+            border: 1px solid #333;
+            width: 100%;
+            list-style-type: none;
+            padding: 0;
+            border-radius: 5px;
+            left: 0;
+            display: none;
+            margin-top: 5px;
+        }
+        .city-box:hover .drop-down {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <section>
+        <div class="border-box">
+            <h2 class="heading">Weather Forecast</h2>
+            <div class="city">
+                <div id="city"></div>
+
+                <div class="city-box">
+                    Add More +
+                    <ul class="drop-down">
+                        {% for city in city_list %}
+                           <li> <a class="dropdown-item" onclick="addCity('{{city.city_id}}', '{{city.city_name}}')" id="{{city.city_id}}" href="#">{{city.city_name}}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </div>
+            <h3>4 Day Forecast</h3>
+            <div class="forecast">
+<!--                <div class="f-details"><p class="bold">Friday</p><p>Today</p><p>March 21st 2022</p><p class="bold">30 C</p><p>clear sky</p></div>-->
+            </div>
+        </div>
+    </section>
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+
+<script type="text/javascript">
+
+function addCity(id, name) {
+    let data = sessionStorage;
+    if(data.getItem('name')!='null' ){
+        sessionStorage.setItem(name, id);
+        getCity()
+    }
+}
+
+$(document).ready(function () {
+    getCity()
+    let data = sessionStorage;
+    city_id = data.getItem(data.key(0))
+    Weather(city_id)
+})
+
+function getCity() {
+    let data = sessionStorage;
+    var html = ''
+    for (let i = 0; i < sessionStorage.length; i++){
+        html += '<a href="#" onclick=\'Weather("'+data.getItem(data.key(i))+'")\'><div class="city-box" id="'+data.getItem(data.key(i))+'">'+data.key(i)+'</div></a>'
+    }
+    $('#city').html(html)
+}
+
+function Weather(city_id) {
+    $('.city-box').css('background','#f5f5f5')
+    $.ajax({
+      url: "http://127.0.0.1:8007/weather/"+city_id+'/',
+      type: 'get',
+      data: {},
+      success: function (response_data) {
+        if (response_data.cod === '200') {
+            html = ''
+            j = 0
+            flag = false
+            var c_data = get_current_date()
+            for (i=0; i<response_data.list.length; i++){
+
+                if(c_data == moment(response_data.list[i].dt_txt).format("MM-DD-YYYY")){
+                    c_data = moment(response_data.list[i].dt_txt).format("MM-DD-YYYY")
+                    flag = true
+                }
+
+                if(j<4 && flag){
+                    let temp = Number(response_data.list[i].main.temp_min-273.15).toFixed(1)
+                    let description = response_data.list[i].weather[0].description
+                    let day = weekday[CheckDay(i)];
+                    let date = moment(response_data.list[i].dt_txt).format("MMM Do YYYY")
+                    let _day = ''
+                    if(!i){
+                        _day = 'Today'
+                    }
+                    html +='<div class="f-details"><p class="bold">'+day+'</p><p>'+_day+'</p><p>'+date+'</p><p class="bold">'+temp+'C</p><p>'+description+'</p></div>'
+                   j = j+1
+                }
+
+            }
+            $('#'+city_id).css('background','#60a549')
+            $('.forecast').html(html)
+        }
+      }
+    })
+}
+
+var d = new Date();
+var weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",];
+function CheckDay(day){
+    if(day + d.getDay() > 6){
+        return day + d.getDay() - 7;
+    }
+    else{
+        return day + d.getDay();
+    }
+}
+
+function get_current_date(){
+    let dd = String(d.getDate()).padStart(2, '0');
+    let mm = String(d.getMonth() + 1).padStart(2, '0');
+    let yyyy = d.getFullYear();
+    let today = mm + '-' + dd + '-' + yyyy;
+    return today
+
+}
+</script>
+</html>
