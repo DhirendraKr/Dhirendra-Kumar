@@ -1,5 +1,5 @@
 from django.urls import re_path
-from oprations.users.views import city_list, city_create, city_update, city_delete, weather_forecast, \
+from apps.users.views import city_list, city_create, city_update, city_delete, weather_forecast, \
     weather_forecast_api
 
 app_name = 'user'

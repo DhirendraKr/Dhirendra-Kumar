@@ -13,11 +13,11 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-import oprations.users.apps
+import apps.users.apps
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-APPS_DIR = BASE_DIR / 'oprations'
+APPS_DIR = BASE_DIR / 'apps'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -46,7 +46,7 @@ THIRD_APRTY_APPS = (
 )
 
 LOCAL_APPS = (
-    'oprations.users.apps.UsersConfig',
+    'apps.users.apps.UsersConfig',
 )
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_APRTY_APPS + LOCAL_APPS

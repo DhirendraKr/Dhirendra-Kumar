@@ -1,5 +1,5 @@
 from django.urls import path, include
-from oprations.users.models import User, City
+from apps.users.models import User, City
 from rest_framework import serializers
 
 
